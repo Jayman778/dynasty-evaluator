@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dynasty Dashboard</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+background:#0f172a;
+color:white;
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+}
+
+button{
+background:#22c55e;
+border:none;
+padding:12px 18px;
+color:white;
+font-weight:bold;
+border-radius:6px;
+cursor:pointer;
+}
+
+input{
+padding:10px;
+border-radius:6px;
+border:none;
+margin-right:10px;
+}
+
+.screen{
+display:none;
+}
+
+.screen.active{
+display:block;
+}
+
+.log{
+margin-top:20px;
+font-family:monospace;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div id="screen-setup" class="screen active">
+
+<h2>Dynasty Dashboard</h2>
+
+<input id="leagueInput" placeholder="Enter Sleeper League ID">
+
+<button onclick="startLoad()">GO TO LEAGUE</button>
+
+</div>
+
+
+<div id="screen-loading" class="screen">
+
+<h2>Loading League Data</h2>
+
+<div class="log" id="log"></div>
+
+</div>
+
+
+<div id="screen-overview" class="screen">
+
+<h2>League Overview</h2>
+
+<div id="leagueInfo"></div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const S = {
+league:null,
+rosters:null,
+users:null,
+players:null,
+teams:[]
+};
+
+function showScreen(s){
+
+['setup','loading','overview'].forEach(function(id){
+document.getElementById('screen-' + id).classList.remove('active');
+});
+
+document.getElementById('screen-' + s).classList.add('active');
+
+}
+
+function log(msg){
+
+const el = document.getElementById('log');
+
+const row = document.createElement('div');
+
+row.textContent = msg;
+
+el.appendChild(row);
+
+}
+
+async function startLoad(){
+
+const leagueId = document.getElementById('leagueInput').value;
+
+if(!leagueId){
+alert('Enter league ID');
+return;
+}
+
+showScreen('loading');
+
+await loadLeague(leagueId);
+
+}
+
+async function loadLeague(id){
+
+log('→ Fetching league info');
+
+const leagueRes = await fetch('https://api.sleeper.app/v1/league/' + id);
+
+S.league = await leagueRes.json();
+
+log('✓ League loaded');
+
+log('→ Fetching rosters');
+
+const rosterRes = await fetch('https://api.sleeper.app/v1/league/' + id + '/rosters');
+
+S.rosters = await rosterRes.json();
+
+log('✓ Rosters loaded');
+
+log('→ Fetching users');
+
+const userRes = await fetch('https://api.sleeper.app/v1/league/' + id + '/users');
+
+S.users = await userRes.json();
+
+log('✓ Users loaded');
+
+log('→ Fetching players database');
+
+const playerRes = await fetch('https://api.sleeper.app/v1/players/nfl');
+
+S.players = await playerRes.json();
+
+log('✓ Players loaded');
+
+buildTeams();
+
+showOverview();
+
+}
+
+function buildTeams(){
+
+S.teams = S.rosters.map(function(r){
+
+const user = S.users.find(function(u){
+return u.user_id === r.owner_id;
+});
+
+return {
+name:user ? user.display_name : 'Team ' + r.roster_id,
+roster:r
+};
+
+});
+
+}
+
+function showOverview(){
+
+showScreen('overview');
+
+const info = document.getElementById('leagueInfo');
+
+info.innerHTML = '';
+
+const leagueName = document.createElement('h3');
+
+leagueName.textContent = S.league.name;
+
+info.appendChild(leagueName);
+
+const list = document.createElement('ul');
+
+const sorted = Array.from(S.teams);
+
+sorted.forEach(function(t){
+
+const li = document.createElement('li');
+
+li.textContent = t.name;
+
+list.appendChild(li);
+
+});
+
+info.appendChild(list);
+
+}
+
+function esc(s){
+
+if(!s) return '';
+
+return String(s)
+.replace(/&/g,'&amp;')
+.replace(/</g,'&lt;')
+.replace(/>/g,'&gt;')
+.replace(/"/g,'&quot;');
+
+}
+
+</script>
+
+</body>
+</html>
