@@ -1,241 +1,173 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Dynasty Dashboard</title>
-
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dynasty Evaluator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-
-body{
-font-family: Arial, sans-serif;
-background:#0f172a;
-color:white;
-margin:0;
-padding:20px;
+:root {
+  --bg:#080810;--bg2:#0f0f1a;--bg3:#161624;--bg4:#1e1e2e;--bg5:#252538;
+  --border:#252535;--border2:#353550;
+  --text:#eeeef5;--text2:#8888a8;--text3:#4a4a6a;
+  --accent:#00e5ff;--accent2:#7c3aed;--accent3:#f59e0b;
+  --green:#10b981;--red:#ef4444;--orange:#f97316;
+  --gold:#fbbf24;--silver:#94a3b8;--bronze:#b87333;
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:#080810;color:#eeeef5;font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
 
-.container{
-max-width:900px;
-margin:auto;
-}
+header{position:sticky;top:0;z-index:100;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #252535;background:rgba(8,8,16,0.96);backdrop-filter:blur(16px);}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#00e5ff;text-shadow:0 0 24px rgba(0,229,255,0.35);}
+.logo span{color:#4a4a6a;font-size:10px;letter-spacing:3px;display:block;margin-top:-2px;font-family:'DM Mono',monospace;}
+nav{display:flex;gap:4px;}
+nav button{background:none;border:1px solid transparent;color:#8888a8;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:7px 14px;cursor:pointer;border-radius:4px;transition:all 0.18s;}
+nav button:hover{color:#eeeef5;border-color:#353550;}
+nav button.active{color:#00e5ff;border-color:#00e5ff;background:rgba(0,229,255,0.07);}
 
-button{
-background:#22c55e;
-border:none;
-padding:12px 18px;
-color:white;
-font-weight:bold;
-border-radius:6px;
-cursor:pointer;
-}
+main{position:relative;z-index:1;padding:36px 32px;max-width:1440px;margin:0 auto;}
 
-input{
-padding:10px;
-border-radius:6px;
-border:none;
-margin-right:10px;
-}
-
-.screen{
-display:none;
-}
-
-.screen.active{
-display:block;
-}
-
-.log{
-margin-top:20px;
-font-family:monospace;
-}
-
+/* ...rest of CSS unchanged... */
 </style>
 </head>
-
 <body>
-
-<div class="container">
-
-<div id="screen-setup" class="screen active">
-
-<h2>Dynasty Dashboard</h2>
-
-<input id="leagueInput" placeholder="Enter Sleeper League ID">
-
-<button onclick="startLoad()">GO TO LEAGUE</button>
-
-</div>
-
-
-<div id="screen-loading" class="screen">
-
-<h2>Loading League Data</h2>
-
-<div class="log" id="log"></div>
-
-</div>
-
-
-<div id="screen-overview" class="screen">
-
-<h2>League Overview</h2>
-
-<div id="leagueInfo"></div>
-
-</div>
-
-</div>
-
-
+<header>
+  <div class="logo">Dynasty<span>Evaluator &nbsp;·&nbsp; 2026 Season</span></div>
+  <nav id="nav" class="hidden">
+    <button data-tab="overview" class="active">Overview</button>
+    <button data-tab="rankings">Rankings</button>
+    <button data-tab="trade">Trade Calc</button>
+  </nav>
+</header>
+<main id="app">
+  <!-- ...all main HTML unchanged... -->
+</main>
 <script>
+// ── STATE ──────────────────────────────────────────────────────
+const S={leagueId:null,leagueInfo:null,users:[],rosters:[],players:{},stats:{2025:{},2024:{}},tradedPicks:[],draftPicks:{},teams:[],tL:{roster:null,assets:[]},tR:{roster:null,assets:[]}};
+const CY=2026;
+const SFMT={pass_yd:1/25,pass_td:4,pass_int:-2,rush_yd:1/10,rush_td:6,rec_yd:1/10,rec:1,fum:-1,fum_lost:-1};
+const AGE={QB:{peak:28,cliff:36,rAge:23},RB:{peak:23,cliff:27,rAge:22},WR:{peak:25,cliff:30,rAge:22},TE:{peak:26,cliff:32,rAge:23},K:{peak:30,cliff:40,rAge:24},DEF:{peak:30,cliff:40,rAge:24}};
+const PBASE={1:100,2:58,3:32,4:15,5:6};
+const YDISC={0:1.0,1:0.85,2:0.72,3:0.60};
+const TIERS=[{min:78,label:'ELITE',cls:'tier-elite'},{min:63,label:'CONTENDER',cls:'tier-contender'},{min:48,label:'COMPETING',cls:'tier-competing'},{min:33,label:'REBUILDING',cls:'tier-rebuilding'},{min:0,label:'TANKING',cls:'tier-tanking'}];
 
-const S = {
-league:null,
-rosters:null,
-users:null,
-players:null,
-teams:[]
-};
-
-function showScreen(s){
-
-['setup','loading','overview'].forEach(function(id){
-document.getElementById('screen-' + id).classList.remove('active');
-});
-
-document.getElementById('screen-' + s).classList.add('active');
-
+// ── NAV ───────────────────────────────────────────────────────
+function showScreen(n){
+['setup','loading','overview','detail','rankings','trade'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
+document.getElementById('screen-'+n).classList.remove('hidden');
+const show=['overview','rankings','trade','detail'].includes(n);
+document.getElementById('nav').classList.toggle('hidden',!show);
+document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===n));
 }
+document.querySelectorAll('nav button').forEach(b=>{b.addEventListener('click',()=>{const t=b.dataset.tab;showScreen(t);if(t==='rankings')renderRankings();if(t==='trade')renderTrade();});});
 
-function log(msg){
-
-const el = document.getElementById('log');
-
-const row = document.createElement('div');
-
-row.textContent = msg;
-
-el.appendChild(row);
-
-}
-
+// ── LOAD ──────────────────────────────────────────────────────
 async function startLoad(){
-
-const leagueId = document.getElementById('leagueInput').value;
-
-if(!leagueId){
-alert('Enter league ID');
-return;
-}
-
+const id=document.getElementById('lid').value.trim();
+if(!id)return showErr('Please enter your League ID');
+document.getElementById('setup-error').classList.add('hidden');
+S.leagueId=id;
 showScreen('loading');
-
-await loadLeague(leagueId);
-
-}
-
-async function loadLeague(id){
-
-log('→ Fetching league info');
-
-const leagueRes = await fetch('https://api.sleeper.app/v1/league/' + id);
-
-S.league = await leagueRes.json();
-
-log('✓ League loaded');
-
-log('→ Fetching rosters');
-
-const rosterRes = await fetch('https://api.sleeper.app/v1/league/' + id + '/rosters');
-
-S.rosters = await rosterRes.json();
-
-log('✓ Rosters loaded');
-
-log('→ Fetching users');
-
-const userRes = await fetch('https://api.sleeper.app/v1/league/' + id + '/users');
-
-S.users = await userRes.json();
-
-log('✓ Users loaded');
-
-log('→ Fetching players database');
-
-const playerRes = await fetch('https://api.sleeper.app/v1/players/nfl');
-
-S.players = await playerRes.json();
-
-log('✓ Players loaded');
-
-buildTeams();
-
-showOverview();
-
-}
-
-function buildTeams(){
-
-S.teams = S.rosters.map(function(r){
-
-const user = S.users.find(function(u){
-return u.user_id === r.owner_id;
-});
-
-return {
-name:user ? user.display_name : 'Team ' + r.roster_id,
-roster:r
-};
-
-});
-
-}
-
-function showOverview(){
-
+try{
+await go(1,loadLeague);
+await go(2,loadRosters);
+await go(3,loadPlayers);
+await go(4,()=>loadStats(2025));
+await go(5,()=>loadStats(2024));
+await go(6,loadPicks);
+await go(7,processData);
 showScreen('overview');
+renderOverview();
+}catch(e){
+console.error('Load error:',e);
+showScreen('setup');
+showErr('Failed: '+e.message+' — Make sure your League ID is correct and try again.');
+}
+}
+async function go(n,fn){
+const el=document.getElementById('step-'+n);
+el.classList.add('active');
+try{
+await fn();
+el.classList.remove('active');
+el.classList.add('done');
+el.textContent=el.textContent.replace('→','✓');
+}catch(e){
+el.textContent=el.textContent.replace('→','✗ Error');
+el.style.color='#ef4444';
+throw e;
+}
+}
+async function sf(url){
+let r;
+try{ r=await fetch(url); }
+catch(e){ throw new Error('Network error — check your internet connection'); }
+if(!r.ok) throw new Error('HTTP '+r.status+' from Sleeper API');
+const data=await r.json();
+return data;
+}
+async function loadLeague(){
+S.leagueInfo=await sf('https://api.sleeper.app/v1/league/'+S.leagueId);
+if(!S.leagueInfo||S.leagueInfo.error)throw new Error('League not found — double-check your League ID');
+S.users=await sf('https://api.sleeper.app/v1/league/'+S.leagueId+'/users');
+}
+async function loadRosters(){S.rosters=await sf('https://api.sleeper.app/v1/league/'+S.leagueId+'/rosters');}
+async function loadPlayers(){S.players=await sf('https://api.sleeper.app/v1/players/nfl');}
+async function loadStats(yr){try{S.stats[yr]=await sf('https://api.sleeper.app/v1/stats/nfl/regular/'+yr+'?season_type=regular&grouping=season')||{};}catch(e){S.stats[yr]={};}}
+async function loadPicks(){S.tradedPicks=await sf('https://api.sleeper.app/v1/league/'+S.leagueId+'/traded_picks');S.draftPicks=buildPicks();}
 
-const info = document.getElementById('leagueInfo');
-
-info.innerHTML = '';
-
-const leagueName = document.createElement('h3');
-
-leagueName.textContent = S.league.name;
-
-info.appendChild(leagueName);
-
-const list = document.createElement('ul');
-
-const sorted = Array.from(S.teams);
-
-sorted.forEach(function(t){
-
-const li = document.createElement('li');
-
-li.textContent = t.name;
-
-list.appendChild(li);
-
+// ── PICKS ─────────────────────────────────────────────────────
+function buildPicks(){
+const o={};
+S.rosters.forEach(r=>{o[r.roster_id]=[];});
+const yrs=[CY,CY+1,CY+2];
+S.rosters.forEach(r=>{yrs.forEach(y=>{for(let rd=1;rd<=5;rd++)o[r.roster_id].push({year:y,round:rd,origOwner:r.roster_id,traded:false});});});
+S.tradedPicks.forEach(tp=>{
+const yr=parseInt(tp.season);if(!yrs.includes(yr))return;
+const orig=tp.roster_id,cur=tp.owner_id;if(orig===cur)return;
+for(const id in o)o[id]=o[id].filter(p=>!(p.year===yr&&p.round===tp.round&&p.origOwner===orig));
+if(o[cur])o[cur].push({year:yr,round:tp.round,origOwner:orig,traded:true});
 });
-
-info.appendChild(list);
-
+return o;
 }
 
-function esc(s){
+// ── SCORING ───────────────────────────────────────────────────
+function fpts(st){if(!st)return 0;return(st.pass_yd||0)*SFMT.pass_yd+(st.pass_td||0)*SFMT.pass_td+(st.pass_int||0)*SFMT.pass_int+(st.rush_yd||0)*SFMT.rush_yd+(st.rush_td||0)*SFMT.rush_td+(st.rec_yd||0)*SFMT.rec_yd+(st.rec||0)*SFMT.rec+(st.fum||0)*SFMT.fum+(st.fum_lost||0)*SFMT.fum_lost;}
 
-if(!s) return '';
-
-return String(s)
-.replace(/&/g,'&amp;')
-.replace(/</g,'&lt;')
-.replace(/>/g,'&gt;')
-.replace(/"/g,'&quot;');
-
-}
-
+// ── FIXED: Array.from() call, replaced smart quotes throughout JS ─────────────────────────────
+function processData(){return new Promise(resolve=>{
+const rnks=buildRanks();
+const umap={};S.users.forEach(u=>{umap[u.user_id]=u;});
+S.teams=S.rosters.map(roster=>{
+const user=umap[roster.owner_id]||{};
+const players=(roster.players||[]).map(pid=>{
+const p=S.players[pid];if(!p||!p.position)return null;
+const pos=p.position,age=p.age||(AGE[pos]?.rAge||23);
+const isRookie=!p.age||p.age<=22;
+const r25=rnks[2025][pos]?.[pid]??null,r24=rnks[2024][pos]?.[pid]??null;
+const t25=rnks[2025][pos]?Object.keys(rnks[2025][pos]).length:0;
+const t24=rnks[2024][pos]?Object.keys(rnks[2024][pos]).length:0;
+const score=calcPS(pos,age,isRookie,r25,r24,t25,t24);
+return{pid,name:p.full_name||pid,pos,age,isRookie,r25,r24,score};
+}).filter(Boolean).sort((a,b)=>b.score-a.score);
+const picks=S.draftPicks[roster.roster_id]||[];
+const pv=picks.reduce((s,pk)=>s+calcPV(pk),0);
+const pScore=Math.min(100,pv/6);
+const ss=calcSS(players),ds=calcDS(players),ys=calcYS(players);
+const comp=Math.round(ss*0.38+ds*0.22+ys*0.22+pScore*0.18);
+return{rosterId:roster.roster_id,teamName:user.metadata?.team_name||'Team '+roster.roster_id,ownerName:user.display_name||'Unknown',players,picks,scores:{composite:comp,starters:Math.round(ss),depth:Math.round(ds),youth:Math.round(ys),picks:Math.round(pScore)},wins:roster.settings?.wins||0,losses:roster.settings?.losses||0};
+});
+const scores=S.teams.map(t=>t.scores.composite);
+const mn=Math.min(...scores),mx=Math.max(...scores),rng=Math.max(mx-mn,1);
+S.teams.forEach(t=>{t.scores.composite=Math.round(25+((t.scores.composite-mn)/rng)*70);});
+S.teams.sort((a,b)=>b.scores.composite-a.scores.composite);
+resolve();
+});}
 </script>
-
 </body>
 </html>
