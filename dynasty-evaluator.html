@@ -8,166 +8,1134 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg:#080810;--bg2:#0f0f1a;--bg3:#161624;--bg4:#1e1e2e;--bg5:#252538;
-  --border:#252535;--border2:#353550;
-  --text:#eeeef5;--text2:#8888a8;--text3:#4a4a6a;
-  --accent:#00e5ff;--accent2:#7c3aed;--accent3:#f59e0b;
-  --green:#10b981;--red:#ef4444;--orange:#f97316;
-  --gold:#fbbf24;--silver:#94a3b8;--bronze:#b87333;
-}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{background:#080810;color:#eeeef5;font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
 
 header{position:sticky;top:0;z-index:100;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #252535;background:rgba(8,8,16,0.96);backdrop-filter:blur(16px);}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#00e5ff;text-shadow:0 0 24px rgba(0,229,255,0.35);}
-.logo span{color:#4a4a6a;font-size:10px;letter-spacing:3px;display:block;margin-top:-2px;font-family:'DM Mono',monospace;}
+.logo{font-family:‘Bebas Neue’,sans-serif;font-size:24px;letter-spacing:4px;color:#00e5ff;text-shadow:0 0 24px rgba(0,229,255,0.35);}
+.logo span{color:#4a4a6a;font-size:10px;letter-spacing:3px;display:block;margin-top:-2px;font-family:‘DM Mono’,monospace;}
 nav{display:flex;gap:4px;}
-nav button{background:none;border:1px solid transparent;color:#8888a8;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:7px 14px;cursor:pointer;border-radius:4px;transition:all 0.18s;}
+nav button{background:none;border:1px solid transparent;color:#8888a8;font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:7px 14px;cursor:pointer;border-radius:4px;transition:all 0.18s;}
 nav button:hover{color:#eeeef5;border-color:#353550;}
 nav button.active{color:#00e5ff;border-color:#00e5ff;background:rgba(0,229,255,0.07);}
 
 main{position:relative;z-index:1;padding:36px 32px;max-width:1440px;margin:0 auto;}
 
-/* ...rest of CSS unchanged... */
+.screen{display:none;}
+.screen.active{display:block;}
+
+.setup-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:75vh;gap:40px;}
+.setup-hero{text-align:center;}
+.setup-hero h1{font-family:‘Bebas Neue’,sans-serif;font-size:80px;letter-spacing:8px;line-height:0.95;background:linear-gradient(135deg,#00e5ff 0%,#0088ff 50%,#7c3aed 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.setup-hero p{color:#8888a8;font-size:13px;margin-top:14px;letter-spacing:1px;font-family:‘DM Mono’,monospace;}
+.setup-card{background:#0f0f1a;border:1px solid #252535;border-radius:14px;padding:44px;width:100%;max-width:460px;display:flex;flex-direction:column;gap:22px;box-shadow:0 24px 80px rgba(0,0,0,0.5);}
+.setup-card label{font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8888a8;display:block;margin-bottom:8px;}
+.setup-card input{width:100%;background:#161624;border:1px solid #353550;color:#eeeef5;font-family:‘DM Mono’,monospace;font-size:15px;padding:13px 16px;border-radius:7px;outline:none;}
+.setup-card input::placeholder{color:#4a4a6a;}
+.btn-primary{background:#00e5ff;color:#000;border:none;font-family:‘DM Mono’,monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;padding:15px;border-radius:7px;cursor:pointer;width:100%;}
+.btn-primary:hover{background:#33eaff;}
+.error-box{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:7px;padding:14px 18px;color:#fca5a5;font-family:‘DM Mono’,monospace;font-size:11px;display:none;}
+
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;gap:28px;}
+.spinner{width:44px;height:44px;border:2px solid #353550;border-top-color:#00e5ff;border-radius:50%;animation:spin 0.75s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-family:‘DM Mono’,monospace;font-size:11px;letter-spacing:3px;color:#8888a8;text-transform:uppercase;}
+.log-box{display:flex;flex-direction:column;gap:8px;}
+.log-row{font-family:‘DM Mono’,monospace;font-size:11px;color:#4a4a6a;letter-spacing:1px;}
+.log-row.done{color:#10b981;}
+.log-row.active{color:#00e5ff;}
+.log-row.fail{color:#ef4444;}
+
+.section-title{font-family:‘Bebas Neue’,sans-serif;font-size:38px;letter-spacing:5px;color:#eeeef5;margin-bottom:4px;}
+.section-sub{font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:2px;color:#4a4a6a;text-transform:uppercase;margin-bottom:32px;}
+
+.league-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px;}
+.summary-stat{background:#0f0f1a;border:1px solid #252535;border-radius:10px;padding:18px 20px;}
+.summary-val{font-family:‘Bebas Neue’,sans-serif;font-size:36px;letter-spacing:2px;line-height:1;}
+.summary-lbl{font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:1.5px;color:#4a4a6a;text-transform:uppercase;margin-top:4px;}
+
+.chart-card{background:#0f0f1a;border:1px solid #252535;border-radius:12px;padding:24px;margin-bottom:32px;}
+.chart-card h3{font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:2px;color:#4a4a6a;text-transform:uppercase;margin-bottom:18px;}
+
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;}
+.team-card{background:#0f0f1a;border:1px solid #252535;border-radius:12px;padding:24px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.team-card:hover{border-color:#353550;transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.5);}
+.team-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.team-name{font-size:15px;font-weight:600;color:#eeeef5;margin-bottom:2px;}
+.team-owner{font-family:‘DM Mono’,monospace;font-size:10px;color:#4a4a6a;margin-bottom:10px;}
+.team-score-num{font-family:‘Bebas Neue’,sans-serif;font-size:52px;letter-spacing:2px;line-height:1;}
+.team-score-lbl{font-family:‘DM Mono’,monospace;font-size:9px;color:#4a4a6a;letter-spacing:1px;}
+.team-rank-lbl{font-family:‘DM Mono’,monospace;font-size:9px;color:#4a4a6a;margin-top:2px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.bar-label{font-family:‘DM Mono’,monospace;font-size:9px;color:#4a4a6a;width:56px;flex-shrink:0;text-transform:uppercase;letter-spacing:.5px;}
+.bar-track{flex:1;height:5px;background:#252538;border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;}
+.bar-val{font-family:‘DM Mono’,monospace;font-size:10px;color:#8888a8;width:24px;text-align:right;flex-shrink:0;}
+
+.tier-badge{display:inline-block;font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:3px 9px;border-radius:3px;}
+.tier-elite     {background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);}
+.tier-contender {background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);}
+.tier-competing {background:rgba(0,229,255,0.08); color:#00e5ff;border:1px solid rgba(0,229,255,0.2);}
+.tier-rebuilding{background:rgba(245,158,11,0.1); color:#f59e0b;border:1px solid rgba(245,158,11,0.25);}
+.tier-tanking   {background:rgba(239,68,68,0.1);  color:#ef4444;border:1px solid rgba(239,68,68,0.25);}
+
+.back-btn{display:inline-flex;align-items:center;gap:8px;background:none;border:1px solid #252535;color:#8888a8;font-family:‘DM Mono’,monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 16px;border-radius:5px;cursor:pointer;margin-bottom:28px;}
+.back-btn:hover{border-color:#353550;color:#eeeef5;}
+
+.detail-hero{display:grid;grid-template-columns:1fr 320px;gap:32px;margin-bottom:36px;padding-bottom:32px;border-bottom:1px solid #252535;}
+.detail-rank{font-family:‘Bebas Neue’,sans-serif;font-size:96px;line-height:0.85;color:#252535;margin-bottom:8px;}
+.detail-name{font-family:‘Bebas Neue’,sans-serif;font-size:48px;letter-spacing:5px;line-height:1;}
+.detail-owner-lbl{font-family:‘DM Mono’,monospace;font-size:11px;color:#4a4a6a;margin:6px 0 12px;}
+.detail-scores{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px;}
+.dscore-val{font-family:‘Bebas Neue’,sans-serif;font-size:34px;letter-spacing:2px;line-height:1;}
+.dscore-lbl{font-family:‘DM Mono’,monospace;font-size:9px;color:#4a4a6a;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.detail-chart-box{background:#0f0f1a;border:1px solid #252535;border-radius:10px;padding:16px;display:flex;align-items:center;justify-content:center;}
+
+.position-section{margin-bottom:32px;}
+.pos-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.pos-tag{font-family:‘Bebas Neue’,sans-serif;font-size:17px;letter-spacing:2px;padding:3px 11px;border-radius:4px;}
+.pos-QB{background:rgba(124,58,237,0.18);color:#c4b5fd;}
+.pos-RB{background:rgba(16,185,129,0.18);color:#6ee7b7;}
+.pos-WR{background:rgba(0,229,255,0.12);color:#00e5ff;}
+.pos-TE{background:rgba(245,158,11,0.15);color:#fcd34d;}
+.pos-K{background:rgba(239,68,68,0.13);color:#fca5a5;}
+.pos-DEF{background:rgba(100,116,139,0.18);color:#94a3b8;}
+.pos-count{font-family:‘DM Mono’,monospace;font-size:10px;color:#4a4a6a;}
+
+.ptable-hdr{display:grid;grid-template-columns:1fr 52px 72px 72px 72px 28px;gap:8px;padding:0 16px 6px;font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:1px;color:#4a4a6a;text-transform:uppercase;}
+.player-row{background:#0f0f1a;border:1px solid #252535;border-radius:7px;padding:11px 16px;display:grid;grid-template-columns:1fr 52px 72px 72px 72px 28px;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px;}
+.player-row:hover{border-color:#353550;background:#161624;}
+.player-name{font-size:13px;font-weight:500;}
+.pcell{font-family:‘DM Mono’,monospace;font-size:11px;color:#8888a8;text-align:center;}
+.pscore{font-family:‘Bebas Neue’,sans-serif;font-size:22px;letter-spacing:1px;text-align:right;}
+.expand-btn{background:none;border:none;color:#4a4a6a;cursor:pointer;font-size:13px;padding:2px;}
+.breakdown-row{background:#161624;border:1px solid #252535;border-top:none;border-radius:0 0 7px 7px;padding:14px 16px;display:none;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:4px;margin-top:-4px;}
+.breakdown-row.open{display:grid;}
+.bd-val{font-family:‘Bebas Neue’,sans-serif;font-size:26px;letter-spacing:1px;text-align:center;}
+.bd-lbl{font-family:‘DM Mono’,monospace;font-size:9px;color:#4a4a6a;letter-spacing:1px;text-transform:uppercase;margin-top:3px;text-align:center;}
+.rookie-tag{font-family:‘DM Mono’,monospace;font-size:8px;background:rgba(124,58,237,0.2);color:#c4b5fd;border-radius:2px;padding:1px 5px;margin-left:5px;vertical-align:middle;}
+
+.picks-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.pick-chip{background:#161624;border:1px solid #353550;border-radius:8px;padding:10px 14px;font-family:‘DM Mono’,monospace;font-size:10px;color:#8888a8;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:84px;}
+.pick-chip .prnd{font-family:‘Bebas Neue’,sans-serif;font-size:22px;letter-spacing:1px;}
+.pick-chip.r1{border-color:rgba(251,191,36,0.5);color:#fbbf24;}
+.pick-chip.r2{border-color:rgba(148,163,184,0.4);color:#94a3b8;}
+.pick-chip.r3{border-color:rgba(184,115,51,0.4);color:#b87333;}
+
+.rankings-wrap{background:#0f0f1a;border:1px solid #252535;border-radius:12px;overflow:hidden;}
+.rtable{width:100%;border-collapse:collapse;}
+.rtable th{font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#4a4a6a;padding:12px 16px;border-bottom:1px solid #252535;text-align:left;background:#161624;}
+.rtable th.r{text-align:right;}
+.rtable td{padding:12px 16px;border-bottom:1px solid #252535;font-size:13px;}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:#161624;cursor:pointer;}
+.rnum{font-family:‘Bebas Neue’,sans-serif;font-size:26px;letter-spacing:1px;color:#4a4a6a;}
+.rnum.gold{color:#fbbf24;}.rnum.silver{color:#94a3b8;}.rnum.bronze{color:#b87333;}
+
+.trade-layout{display:grid;grid-template-columns:1fr 140px 1fr;gap:16px;align-items:start;}
+.trade-side{background:#0f0f1a;border:1px solid #252535;border-radius:12px;padding:22px;}
+.trade-side-title{font-family:‘Bebas Neue’,sans-serif;font-size:20px;letter-spacing:3px;color:#8888a8;margin-bottom:14px;}
+.tsel{width:100%;background:#161624;border:1px solid #353550;color:#eeeef5;font-family:‘DM Sans’,sans-serif;font-size:13px;padding:9px 12px;border-radius:7px;outline:none;cursor:pointer;margin-bottom:14px;}
+.titems{display:flex;flex-direction:column;gap:6px;min-height:60px;}
+.titem{display:flex;align-items:center;justify-content:space-between;background:#161624;border:1px solid #252535;border-radius:6px;padding:9px 12px;font-size:13px;}
+.titem-val{font-family:‘Bebas Neue’,sans-serif;font-size:20px;color:#00e5ff;margin-right:4px;}
+.rm-btn{background:none;border:none;color:#4a4a6a;cursor:pointer;font-size:18px;padding:0 4px;line-height:1;}
+.rm-btn:hover{color:#ef4444;}
+.total-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #252535;margin-top:14px;padding-top:14px;}
+.total-lbl{font-family:‘DM Mono’,monospace;font-size:10px;color:#4a4a6a;letter-spacing:1px;text-transform:uppercase;}
+.total-val{font-family:‘Bebas Neue’,sans-serif;font-size:36px;letter-spacing:2px;color:#00e5ff;}
+.add-section{margin-top:16px;}
+.add-lbl{font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:1.5px;color:#4a4a6a;text-transform:uppercase;margin-bottom:6px;}
+.asearch{width:100%;background:#161624;border:1px solid #252535;color:#eeeef5;font-family:‘DM Sans’,sans-serif;font-size:13px;padding:9px 12px;border-radius:6px;outline:none;margin-bottom:4px;}
+.asset-dd{background:#1e1e2e;border:1px solid #353550;border-radius:6px;max-height:200px;overflow-y:auto;display:none;}
+.asset-dd.open{display:block;}
+.aopt{padding:9px 12px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #252535;}
+.aopt:hover{background:#252538;}
+.pick-btns{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.pbtn{background:#1e1e2e;border:1px solid #353550;color:#8888a8;font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:1px;padding:5px 9px;border-radius:4px;cursor:pointer;}
+.pbtn:hover{border-color:#00e5ff;color:#00e5ff;}
+
+.verdict-box{background:#0f0f1a;border:1px solid #252535;border-radius:12px;padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
+.v-icon{font-size:36px;}
+.v-lbl{font-family:‘DM Mono’,monospace;font-size:9px;letter-spacing:2px;color:#4a4a6a;text-transform:uppercase;}
+.v-txt{font-family:‘Bebas Neue’,sans-serif;font-size:22px;letter-spacing:3px;}
+.v-diff{font-family:‘Bebas Neue’,sans-serif;font-size:40px;letter-spacing:2px;}
+.vfair{color:#10b981;}.vslight{color:#f59e0b;}.vlopsided{color:#ef4444;}
+.v-bar{width:88%;height:7px;background:#252538;border-radius:4px;overflow:hidden;position:relative;}
+.v-bar-fill{height:100%;border-radius:4px;position:absolute;top:0;left:0;}
+.v-ab{display:flex;justify-content:space-between;width:88%;font-family:‘DM Mono’,monospace;font-size:10px;color:#4a4a6a;}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:#080810;}
+::-webkit-scrollbar-thumb{background:#353550;border-radius:3px;}
 </style>
+
 </head>
 <body>
 <header>
-  <div class="logo">Dynasty<span>Evaluator &nbsp;·&nbsp; 2026 Season</span></div>
-  <nav id="nav" class="hidden">
-    <button data-tab="overview" class="active">Overview</button>
-    <button data-tab="rankings">Rankings</button>
-    <button data-tab="trade">Trade Calc</button>
+  <div class="logo">Dynasty<span>Evaluator &nbsp; 2026 Season</span></div>
+  <nav id="nav" style="display:none;">
+    <button id="nav-overview" onclick="navTo('overview')">Overview</button>
+    <button id="nav-rankings" onclick="navTo('rankings')">Rankings</button>
+    <button id="nav-trade" onclick="navTo('trade')">Trade Calc</button>
   </nav>
 </header>
-<main id="app">
-  <!-- ...all main HTML unchanged... -->
+<main>
+
+  <div id="screen-setup" class="screen active">
+    <div class="setup-screen">
+      <div class="setup-hero">
+        <h1>DYNASTY<br>EVALUATOR</h1>
+        <p>Powered by Sleeper API &nbsp; 12-Team Dynasty &nbsp; 2026</p>
+      </div>
+      <div class="setup-card">
+        <div>
+          <label>Sleeper League ID</label>
+          <input id="lid" type="text" placeholder="e.g. 1234567890"/>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:#4a4a6a;margin-top:7px;">Find in Sleeper URL: sleeper.com/leagues/LEAGUE_ID</div>
+        </div>
+        <button class="btn-primary" onclick="startLoad()">GO TO LEAGUE</button>
+        <div id="err-box" class="error-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-loading" class="screen">
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading League Data</div>
+      <div class="log-box" id="log-box"></div>
+    </div>
+  </div>
+
+  <div id="screen-overview" class="screen">
+    <div class="section-title">LEAGUE OVERVIEW</div>
+    <div class="section-sub" id="league-sub"></div>
+    <div class="league-summary" id="league-summary"></div>
+    <div class="chart-card"><h3>Dynasty Score - All Teams</h3><canvas id="overview-chart" height="75"></canvas></div>
+    <div class="teams-grid" id="teams-grid"></div>
+  </div>
+
+  <div id="screen-detail" class="screen">
+    <button class="back-btn" onclick="navTo('overview')">Back to League</button>
+    <div id="detail-content"></div>
+  </div>
+
+  <div id="screen-rankings" class="screen">
+    <div class="section-title">Power Rankings</div>
+    <div class="section-sub">Dynasty composite score - all teams</div>
+    <div id="rankings-content"></div>
+  </div>
+
+  <div id="screen-trade" class="screen">
+    <div class="section-title">Trade Calculator</div>
+    <div class="section-sub">Evaluate asset value and trade fairness</div>
+    <div id="trade-content"></div>
+  </div>
+
 </main>
 <script>
-// ── STATE ──────────────────────────────────────────────────────
-const S={leagueId:null,leagueInfo:null,users:[],rosters:[],players:{},stats:{2025:{},2024:{}},tradedPicks:[],draftPicks:{},teams:[],tL:{roster:null,assets:[]},tR:{roster:null,assets:[]}};
-const CY=2026;
-const SFMT={pass_yd:1/25,pass_td:4,pass_int:-2,rush_yd:1/10,rush_td:6,rec_yd:1/10,rec:1,fum:-1,fum_lost:-1};
-const AGE={QB:{peak:28,cliff:36,rAge:23},RB:{peak:23,cliff:27,rAge:22},WR:{peak:25,cliff:30,rAge:22},TE:{peak:26,cliff:32,rAge:23},K:{peak:30,cliff:40,rAge:24},DEF:{peak:30,cliff:40,rAge:24}};
-const PBASE={1:100,2:58,3:32,4:15,5:6};
-const YDISC={0:1.0,1:0.85,2:0.72,3:0.60};
-const TIERS=[{min:78,label:'ELITE',cls:'tier-elite'},{min:63,label:'CONTENDER',cls:'tier-contender'},{min:48,label:'COMPETING',cls:'tier-competing'},{min:33,label:'REBUILDING',cls:'tier-rebuilding'},{min:0,label:'TANKING',cls:'tier-tanking'}];
 
-// ── NAV ───────────────────────────────────────────────────────
-function showScreen(n){
-['setup','loading','overview','detail','rankings','trade'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
-document.getElementById('screen-'+n).classList.remove('hidden');
-const show=['overview','rankings','trade','detail'].includes(n);
-document.getElementById('nav').classList.toggle('hidden',!show);
-document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===n));
+// ── STATE ──────────────────────────────────────────────────────
+var S = {
+leagueId: null,
+leagueInfo: null,
+users: [],
+rosters: [],
+players: {},
+stats2025: {},
+stats2024: {},
+tradedPicks: [],
+draftPicks: {},
+teams: [],
+tradeL: { roster: null, assets: [] },
+tradeR: { roster: null, assets: [] }
+};
+
+var CY = 2026;
+var PBASE = { 1:100, 2:58, 3:32, 4:15, 5:6 };
+var YDISC = { 0:1.0, 1:0.85, 2:0.72, 3:0.60 };
+var TIERS = [
+{ min:78, label:‘ELITE’,      cls:‘tier-elite’ },
+{ min:63, label:‘CONTENDER’,  cls:‘tier-contender’ },
+{ min:48, label:‘COMPETING’,  cls:‘tier-competing’ },
+{ min:33, label:‘REBUILDING’, cls:‘tier-rebuilding’ },
+{ min:0,  label:‘TANKING’,    cls:‘tier-tanking’ }
+];
+var AGE_CFG = {
+QB:  { peak:28, cliff:36, rAge:23 },
+RB:  { peak:23, cliff:27, rAge:22 },
+WR:  { peak:25, cliff:30, rAge:22 },
+TE:  { peak:26, cliff:32, rAge:23 },
+K:   { peak:30, cliff:40, rAge:24 },
+DEF: { peak:30, cliff:40, rAge:24 }
+};
+
+var oChart = null;
+var rChart = null;
+
+// ── SCREEN CONTROL ────────────────────────────────────────────
+function showScreen(name) {
+var screens = [‘setup’,‘loading’,‘overview’,‘detail’,‘rankings’,‘trade’];
+for (var i = 0; i < screens.length; i++) {
+var el = document.getElementById(‘screen-’ + screens[i]);
+if (screens[i] === name) {
+el.classList.add(‘active’);
+} else {
+el.classList.remove(‘active’);
 }
-document.querySelectorAll('nav button').forEach(b=>{b.addEventListener('click',()=>{const t=b.dataset.tab;showScreen(t);if(t==='rankings')renderRankings();if(t==='trade')renderTrade();});});
+}
+var showNav = (name !== ‘setup’ && name !== ‘loading’);
+document.getElementById(‘nav’).style.display = showNav ? ‘flex’ : ‘none’;
+var navBtns = [‘overview’,‘rankings’,‘trade’];
+for (var j = 0; j < navBtns.length; j++) {
+var btn = document.getElementById(‘nav-’ + navBtns[j]);
+if (btn) {
+if (navBtns[j] === name) {
+btn.classList.add(‘active’);
+} else {
+btn.classList.remove(‘active’);
+}
+}
+}
+}
+
+function navTo(name) {
+showScreen(name);
+if (name === ‘rankings’) renderRankings();
+if (name === ‘trade’) renderTrade();
+}
+
+// ── LOGGING ───────────────────────────────────────────────────
+function addLog(msg, status) {
+var box = document.getElementById(‘log-box’);
+var row = document.createElement(‘div’);
+row.className = ‘log-row’ + (status ? ’ ’ + status : ‘’);
+row.id = ‘log-’ + msg.replace(/\s/g,’_’).slice(0,20);
+row.textContent = msg;
+box.appendChild(row);
+return row;
+}
+
+function showErr(msg) {
+var el = document.getElementById(‘err-box’);
+el.textContent = msg;
+el.style.display = ‘block’;
+}
 
 // ── LOAD ──────────────────────────────────────────────────────
-async function startLoad(){
-const id=document.getElementById('lid').value.trim();
-if(!id)return showErr('Please enter your League ID');
-document.getElementById('setup-error').classList.add('hidden');
-S.leagueId=id;
-showScreen('loading');
-try{
-await go(1,loadLeague);
-await go(2,loadRosters);
-await go(3,loadPlayers);
-await go(4,()=>loadStats(2025));
-await go(5,()=>loadStats(2024));
-await go(6,loadPicks);
-await go(7,processData);
-showScreen('overview');
+function startLoad() {
+var id = document.getElementById(‘lid’).value.trim();
+if (!id) { showErr(‘Please enter your League ID’); return; }
+document.getElementById(‘err-box’).style.display = ‘none’;
+document.getElementById(‘log-box’).innerHTML = ‘’;
+S.leagueId = id;
+showScreen(‘loading’);
+loadLeague();
+}
+
+function loadLeague() {
+var row = addLog(‘Fetching league info…’, ‘active’);
+fetch(‘https://api.sleeper.app/v1/league/’ + S.leagueId)
+.then(function(r) { return r.json(); })
+.then(function(data) {
+if (!data || data.error) throw new Error(‘League not found’);
+S.leagueInfo = data;
+row.className = ‘log-row done’;
+row.textContent = ‘League info loaded’;
+loadUsers();
+})
+.catch(function(e) {
+row.className = ‘log-row fail’;
+row.textContent = ’Failed: ’ + e.message;
+showScreen(‘setup’);
+showErr(’Error: ’ + e.message);
+});
+}
+
+function loadUsers() {
+var row = addLog(‘Fetching users…’, ‘active’);
+fetch(‘https://api.sleeper.app/v1/league/’ + S.leagueId + ‘/users’)
+.then(function(r) { return r.json(); })
+.then(function(data) {
+S.users = data;
+row.className = ‘log-row done’;
+row.textContent = ‘Users loaded’;
+loadRosters();
+})
+.catch(function(e) {
+row.className = ‘log-row fail’;
+row.textContent = ‘Failed loading users’;
+showScreen(‘setup’);
+showErr(’Error loading users: ’ + e.message);
+});
+}
+
+function loadRosters() {
+var row = addLog(‘Fetching rosters…’, ‘active’);
+fetch(‘https://api.sleeper.app/v1/league/’ + S.leagueId + ‘/rosters’)
+.then(function(r) { return r.json(); })
+.then(function(data) {
+S.rosters = data;
+row.className = ‘log-row done’;
+row.textContent = ‘Rosters loaded’;
+loadPlayers();
+})
+.catch(function(e) {
+row.className = ‘log-row fail’;
+row.textContent = ‘Failed loading rosters’;
+showScreen(‘setup’);
+showErr(’Error: ’ + e.message);
+});
+}
+
+function loadPlayers() {
+var row = addLog(‘Fetching player database (large file)…’, ‘active’);
+fetch(‘https://api.sleeper.app/v1/players/nfl’)
+.then(function(r) { return r.json(); })
+.then(function(data) {
+S.players = data;
+row.className = ‘log-row done’;
+row.textContent = ‘Player database loaded’;
+loadStats2025();
+})
+.catch(function(e) {
+row.className = ‘log-row fail’;
+row.textContent = ‘Failed loading players’;
+showScreen(‘setup’);
+showErr(’Error: ’ + e.message);
+});
+}
+
+function loadStats2025() {
+var row = addLog(‘Fetching 2025 stats…’, ‘active’);
+fetch(‘https://api.sleeper.app/v1/stats/nfl/regular/2025?season_type=regular&grouping=season’)
+.then(function(r) { return r.json(); })
+.then(function(data) {
+S.stats2025 = data || {};
+row.className = ‘log-row done’;
+row.textContent = ‘2025 stats loaded’;
+loadStats2024();
+})
+.catch(function(e) {
+S.stats2025 = {};
+row.className = ‘log-row done’;
+row.textContent = ‘2025 stats unavailable (using 2024 only)’;
+loadStats2024();
+});
+}
+
+function loadStats2024() {
+var row = addLog(‘Fetching 2024 stats…’, ‘active’);
+fetch(‘https://api.sleeper.app/v1/stats/nfl/regular/2024?season_type=regular&grouping=season’)
+.then(function(r) { return r.json(); })
+.then(function(data) {
+S.stats2024 = data || {};
+row.className = ‘log-row done’;
+row.textContent = ‘2024 stats loaded’;
+loadTradedPicks();
+})
+.catch(function(e) {
+S.stats2024 = {};
+row.className = ‘log-row done’;
+row.textContent = ‘2024 stats unavailable’;
+loadTradedPicks();
+});
+}
+
+function loadTradedPicks() {
+var row = addLog(‘Fetching traded picks…’, ‘active’);
+fetch(‘https://api.sleeper.app/v1/league/’ + S.leagueId + ‘/traded_picks’)
+.then(function(r) { return r.json(); })
+.then(function(data) {
+S.tradedPicks = data || [];
+row.className = ‘log-row done’;
+row.textContent = ‘Traded picks loaded’;
+processAndRender();
+})
+.catch(function(e) {
+S.tradedPicks = [];
+row.className = ‘log-row done’;
+row.textContent = ‘Traded picks unavailable’;
+processAndRender();
+});
+}
+
+function processAndRender() {
+var row = addLog(‘Calculating dynasty scores…’, ‘active’);
+S.draftPicks = buildPickOwnership();
+buildTeams();
+row.className = ‘log-row done’;
+row.textContent = ‘Done!’;
+showScreen(‘overview’);
 renderOverview();
-}catch(e){
-console.error('Load error:',e);
-showScreen('setup');
-showErr('Failed: '+e.message+' — Make sure your League ID is correct and try again.');
 }
-}
-async function go(n,fn){
-const el=document.getElementById('step-'+n);
-el.classList.add('active');
-try{
-await fn();
-el.classList.remove('active');
-el.classList.add('done');
-el.textContent=el.textContent.replace('→','✓');
-}catch(e){
-el.textContent=el.textContent.replace('→','✗ Error');
-el.style.color='#ef4444';
-throw e;
-}
-}
-async function sf(url){
-let r;
-try{ r=await fetch(url); }
-catch(e){ throw new Error('Network error — check your internet connection'); }
-if(!r.ok) throw new Error('HTTP '+r.status+' from Sleeper API');
-const data=await r.json();
-return data;
-}
-async function loadLeague(){
-S.leagueInfo=await sf('https://api.sleeper.app/v1/league/'+S.leagueId);
-if(!S.leagueInfo||S.leagueInfo.error)throw new Error('League not found — double-check your League ID');
-S.users=await sf('https://api.sleeper.app/v1/league/'+S.leagueId+'/users');
-}
-async function loadRosters(){S.rosters=await sf('https://api.sleeper.app/v1/league/'+S.leagueId+'/rosters');}
-async function loadPlayers(){S.players=await sf('https://api.sleeper.app/v1/players/nfl');}
-async function loadStats(yr){try{S.stats[yr]=await sf('https://api.sleeper.app/v1/stats/nfl/regular/'+yr+'?season_type=regular&grouping=season')||{};}catch(e){S.stats[yr]={};}}
-async function loadPicks(){S.tradedPicks=await sf('https://api.sleeper.app/v1/league/'+S.leagueId+'/traded_picks');S.draftPicks=buildPicks();}
 
-// ── PICKS ─────────────────────────────────────────────────────
-function buildPicks(){
-const o={};
-S.rosters.forEach(r=>{o[r.roster_id]=[];});
-const yrs=[CY,CY+1,CY+2];
-S.rosters.forEach(r=>{yrs.forEach(y=>{for(let rd=1;rd<=5;rd++)o[r.roster_id].push({year:y,round:rd,origOwner:r.roster_id,traded:false});});});
-S.tradedPicks.forEach(tp=>{
-const yr=parseInt(tp.season);if(!yrs.includes(yr))return;
-const orig=tp.roster_id,cur=tp.owner_id;if(orig===cur)return;
-for(const id in o)o[id]=o[id].filter(p=>!(p.year===yr&&p.round===tp.round&&p.origOwner===orig));
-if(o[cur])o[cur].push({year:yr,round:tp.round,origOwner:orig,traded:true});
+// ── PICK OWNERSHIP ────────────────────────────────────────────
+function buildPickOwnership() {
+var owned = {};
+var yrs = [CY, CY+1, CY+2];
+for (var i = 0; i < S.rosters.length; i++) {
+var rid = S.rosters[i].roster_id;
+owned[rid] = [];
+for (var yi = 0; yi < yrs.length; yi++) {
+for (var rd = 1; rd <= 5; rd++) {
+owned[rid].push({ year: yrs[yi], round: rd, origOwner: rid, traded: false });
+}
+}
+}
+for (var t = 0; t < S.tradedPicks.length; t++) {
+var tp = S.tradedPicks[t];
+var yr = parseInt(tp.season);
+if (yrs.indexOf(yr) === -1) continue;
+var orig = tp.roster_id;
+var cur = tp.owner_id;
+if (orig === cur) continue;
+for (var id in owned) {
+owned[id] = owned[id].filter(function(p) {
+return !(p.year === yr && p.round === tp.round && p.origOwner === orig);
 });
-return o;
+}
+if (owned[cur]) {
+owned[cur].push({ year: yr, round: tp.round, origOwner: orig, traded: true });
+}
+}
+return owned;
 }
 
-// ── SCORING ───────────────────────────────────────────────────
-function fpts(st){if(!st)return 0;return(st.pass_yd||0)*SFMT.pass_yd+(st.pass_td||0)*SFMT.pass_td+(st.pass_int||0)*SFMT.pass_int+(st.rush_yd||0)*SFMT.rush_yd+(st.rush_td||0)*SFMT.rush_td+(st.rec_yd||0)*SFMT.rec_yd+(st.rec||0)*SFMT.rec+(st.fum||0)*SFMT.fum+(st.fum_lost||0)*SFMT.fum_lost;}
+// ── FANTASY POINTS ────────────────────────────────────────────
+function calcFpts(st) {
+if (!st) return 0;
+return (st.pass_yd||0)/25
++ (st.pass_td||0)*4
++ (st.pass_int||0)*-2
++ (st.rush_yd||0)/10
++ (st.rush_td||0)*6
++ (st.rec_yd||0)/10
++ (st.rec||0)*1
++ (st.fum||0)*-1
++ (st.fum_lost||0)*-1;
+}
 
-// ── FIXED: Array.from() call, replaced smart quotes throughout JS ─────────────────────────────
-function processData(){return new Promise(resolve=>{
-const rnks=buildRanks();
-const umap={};S.users.forEach(u=>{umap[u.user_id]=u;});
-S.teams=S.rosters.map(roster=>{
-const user=umap[roster.owner_id]||{};
-const players=(roster.players||[]).map(pid=>{
-const p=S.players[pid];if(!p||!p.position)return null;
-const pos=p.position,age=p.age||(AGE[pos]?.rAge||23);
-const isRookie=!p.age||p.age<=22;
-const r25=rnks[2025][pos]?.[pid]??null,r24=rnks[2024][pos]?.[pid]??null;
-const t25=rnks[2025][pos]?Object.keys(rnks[2025][pos]).length:0;
-const t24=rnks[2024][pos]?Object.keys(rnks[2024][pos]).length:0;
-const score=calcPS(pos,age,isRookie,r25,r24,t25,t24);
-return{pid,name:p.full_name||pid,pos,age,isRookie,r25,r24,score};
-}).filter(Boolean).sort((a,b)=>b.score-a.score);
-const picks=S.draftPicks[roster.roster_id]||[];
-const pv=picks.reduce((s,pk)=>s+calcPV(pk),0);
-const pScore=Math.min(100,pv/6);
-const ss=calcSS(players),ds=calcDS(players),ys=calcYS(players);
-const comp=Math.round(ss*0.38+ds*0.22+ys*0.22+pScore*0.18);
-return{rosterId:roster.roster_id,teamName:user.metadata?.team_name||'Team '+roster.roster_id,ownerName:user.display_name||'Unknown',players,picks,scores:{composite:comp,starters:Math.round(ss),depth:Math.round(ds),youth:Math.round(ys),picks:Math.round(pScore)},wins:roster.settings?.wins||0,losses:roster.settings?.losses||0};
+// ── BUILD RANKINGS ────────────────────────────────────────────
+function buildRanks() {
+var positions = [‘QB’,‘RB’,‘WR’,‘TE’,‘K’];
+var out = { 2025:{}, 2024:{} };
+var years = [2025, 2024];
+for (var yi = 0; yi < years.length; yi++) {
+var yr = years[yi];
+var stats = yr === 2025 ? S.stats2025 : S.stats2024;
+for (var pi = 0; pi < positions.length; pi++) {
+var pos = positions[pi];
+var pool = Object.keys(stats).filter(function(pid) {
+return S.players[pid] && S.players[pid].position === pos;
 });
-const scores=S.teams.map(t=>t.scores.composite);
-const mn=Math.min(...scores),mx=Math.max(...scores),rng=Math.max(mx-mn,1);
-S.teams.forEach(t=>{t.scores.composite=Math.round(25+((t.scores.composite-mn)/rng)*70);});
-S.teams.sort((a,b)=>b.scores.composite-a.scores.composite);
-resolve();
-});}
+pool.sort(function(a, b) {
+return calcFpts(stats[b]) - calcFpts(stats[a]);
+});
+out[yr][pos] = {};
+for (var ri = 0; ri < pool.length; ri++) {
+out[yr][pos][pool[ri]] = ri + 1;
+}
+}
+}
+return out;
+}
+
+// ── PLAYER DYNASTY SCORE ──────────────────────────────────────
+function calcPlayerScore(pos, age, isRookie, r25, r24, tot25, tot24) {
+var c = AGE_CFG[pos] || AGE_CFG.WR;
+var ageScore;
+if (age <= c.peak) {
+ageScore = Math.min(100, 85 + ((c.peak - age) / c.peak) * 15);
+} else if (age <= c.cliff) {
+ageScore = Math.max(0, 85 - ((age - c.peak) / (c.cliff - c.peak)) * 70);
+} else {
+ageScore = Math.max(2, 15 - (age - c.cliff) * 10);
+}
+ageScore = Math.min(100, Math.max(0, ageScore));
+
+function r2s(r, t) {
+if (!r || !t) return 0;
+return Math.max(0, 100 * Math.pow(1 - (r-1) / Math.max(t, 24), 1.8));
+}
+var s25 = r2s(r25, tot25);
+var s24 = r2s(r24, tot24);
+var rankCombo;
+if (isRookie && !r25 && !r24) {
+rankCombo = 35;
+} else if (r25 && r24) {
+rankCombo = s25 * 0.65 + s24 * 0.35;
+} else if (r25) {
+rankCombo = s25;
+} else if (r24) {
+rankCombo = s24 * 0.75;
+} else {
+rankCombo = 0;
+}
+var raw = ageScore * 0.30 + rankCombo * 0.70;
+return Math.min(99, Math.max(1, Math.round(raw)));
+}
+
+function calcStarterScore(players) {
+var needed = { QB:1, RB:2, WR:2, TE:1 };
+var byPos = {};
+for (var i = 0; i < players.length; i++) {
+var pos = players[i].pos;
+if (!byPos[pos]) byPos[pos] = [];
+byPos[pos].push(players[i]);
+}
+var total = 0, cnt = 0;
+var posKeys = Object.keys(needed);
+for (var pi = 0; pi < posKeys.length; pi++) {
+var p = posKeys[pi];
+var n = needed[p];
+var arr = byPos[p] || [];
+for (var j = 0; j < Math.min(n, arr.length); j++) {
+total += arr[j].score; cnt++;
+}
+}
+var flexPool = (byPos.WR||[]).slice(2).concat((byPos.RB||[]).slice(2)).concat((byPos.TE||[]).slice(1));
+flexPool.sort(function(a,b){return b.score-a.score;});
+if (flexPool.length > 0) { total += flexPool[0].score; cnt++; }
+return cnt ? total / cnt : 0;
+}
+
+function calcDepthScore(players) {
+if (!players.length) return 0;
+var total = 0;
+var n = Math.min(12, players.length);
+for (var i = 0; i < n; i++) {
+total += players[i].score * (1 - i * 0.05);
+}
+return total / 12;
+}
+
+function calcYouthScore(players) {
+var relevant = players.filter(function(p) {
+return [‘QB’,‘RB’,‘WR’,‘TE’].indexOf(p.pos) !== -1;
+});
+if (!relevant.length) return 50;
+var weighted = 0;
+var n = Math.min(10, relevant.length);
+for (var i = 0; i < n; i++) {
+var wt = 1 - i * 0.08;
+var c = AGE_CFG[relevant[i].pos] || AGE_CFG.WR;
+var age = relevant[i].age || 25;
+weighted += (Math.max(0, c.cliff - age) / c.cliff) * 100 * wt;
+}
+return Math.min(100, weighted / 5);
+}
+
+function calcPickVal(pk) {
+var base = PBASE[pk.round] || 6;
+var yDiff = Math.min(3, Math.max(0, (pk.year || CY) - CY));
+var disc = YDISC[yDiff] || 0.55;
+return base * disc;
+}
+
+// ── BUILD TEAMS ───────────────────────────────────────────────
+function buildTeams() {
+var rnks = buildRanks();
+var umap = {};
+for (var i = 0; i < S.users.length; i++) {
+umap[S.users[i].user_id] = S.users[i];
+}
+S.teams = S.rosters.map(function(roster) {
+var user = umap[roster.owner_id] || {};
+var playerList = (roster.players || []).map(function(pid) {
+var p = S.players[pid];
+if (!p || !p.position) return null;
+var pos = p.position;
+var age = p.age || (AGE_CFG[pos] ? AGE_CFG[pos].rAge : 23);
+var isRookie = !p.age || p.age <= 22;
+var r25 = (rnks[2025][pos] && rnks[2025][pos][pid]) ? rnks[2025][pos][pid] : null;
+var r24 = (rnks[2024][pos] && rnks[2024][pos][pid]) ? rnks[2024][pos][pid] : null;
+var t25 = rnks[2025][pos] ? Object.keys(rnks[2025][pos]).length : 0;
+var t24 = rnks[2024][pos] ? Object.keys(rnks[2024][pos]).length : 0;
+var score = calcPlayerScore(pos, age, isRookie, r25, r24, t25, t24);
+return { pid:pid, name:(p.full_name||pid), pos:pos, age:age, isRookie:isRookie, r25:r25, r24:r24, score:score };
+}).filter(function(p) { return p !== null; });
+playerList.sort(function(a,b){ return b.score - a.score; });
+
+```
+var picks = S.draftPicks[roster.roster_id] || [];
+var pv = 0;
+for (var pi = 0; pi < picks.length; pi++) pv += calcPickVal(picks[pi]);
+var pScore = Math.min(100, pv / 6);
+var ss = calcStarterScore(playerList);
+var ds = calcDepthScore(playerList);
+var ys = calcYouthScore(playerList);
+var comp = Math.round(ss * 0.38 + ds * 0.22 + ys * 0.22 + pScore * 0.18);
+
+return {
+  rosterId: roster.roster_id,
+  teamName: (user.metadata && user.metadata.team_name) ? user.metadata.team_name : ('Team ' + roster.roster_id),
+  ownerName: user.display_name || 'Unknown',
+  players: playerList,
+  picks: picks,
+  scores: {
+    composite: comp,
+    starters: Math.round(ss),
+    depth: Math.round(ds),
+    youth: Math.round(ys),
+    picks: Math.round(pScore)
+  },
+  wins: (roster.settings && roster.settings.wins) ? roster.settings.wins : 0,
+  losses: (roster.settings && roster.settings.losses) ? roster.settings.losses : 0
+};
+```
+
+});
+
+// Normalize to 25-95 for real spread
+var rawScores = S.teams.map(function(t) { return t.scores.composite; });
+var mn = Math.min.apply(null, rawScores);
+var mx = Math.max.apply(null, rawScores);
+var rng = Math.max(mx - mn, 1);
+for (var ti = 0; ti < S.teams.length; ti++) {
+S.teams[ti].scores.composite = Math.round(25 + ((S.teams[ti].scores.composite - mn) / rng) * 70);
+}
+S.teams.sort(function(a,b) { return b.scores.composite - a.scores.composite; });
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function getTier(s) {
+for (var i = 0; i < TIERS.length; i++) {
+if (s >= TIERS[i].min) return TIERS[i];
+}
+return TIERS[TIERS.length-1];
+}
+function scoreColor(s) {
+if (s >= 75) return ‘#fbbf24’;
+if (s >= 60) return ‘#10b981’;
+if (s >= 45) return ‘#00e5ff’;
+if (s >= 30) return ‘#f59e0b’;
+return ‘#ef4444’;
+}
+function esc(s) {
+if (!s) return ‘’;
+return String(s).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);
+}
+
+// ── RENDER OVERVIEW ───────────────────────────────────────────
+function renderOverview() {
+document.getElementById(‘league-sub’).textContent = (S.leagueInfo.name || ‘Your League’) + ’ - Dynasty - 2026 Season’;
+
+var mp = S.teams[0], my = S.teams[0];
+for (var i = 0; i < S.teams.length; i++) {
+if (S.teams[i].picks.length > mp.picks.length) mp = S.teams[i];
+if (S.teams[i].scores.youth > my.scores.youth) my = S.teams[i];
+}
+var avg = 0;
+for (var j = 0; j < S.teams.length; j++) avg += S.teams[j].scores.composite;
+avg = Math.round(avg / S.teams.length);
+
+document.getElementById(‘league-summary’).innerHTML =
+‘<div class="summary-stat"><div class="summary-val" style="color:#00e5ff">’ + S.teams.length + ‘</div><div class="summary-lbl">Teams</div></div>’ +
+‘<div class="summary-stat"><div class="summary-val" style="color:#10b981">’ + avg + ‘</div><div class="summary-lbl">Avg Dynasty Score</div></div>’ +
+‘<div class="summary-stat"><div class="summary-val" style="color:#fbbf24">’ + mp.picks.length + ’</div><div class="summary-lbl">Most Picks - ’ + esc(mp.ownerName) + ‘</div></div>’ +
+‘<div class="summary-stat"><div class="summary-val" style="color:#7c3aed">’ + my.scores.youth + ’</div><div class="summary-lbl">Best Youth - ’ + esc(my.ownerName) + ‘</div></div>’;
+
+if (oChart) { oChart.destroy(); oChart = null; }
+var ctx = document.getElementById(‘overview-chart’).getContext(‘2d’);
+var labels = [], data = [], colors = [];
+for (var ti = 0; ti < S.teams.length; ti++) {
+var t = S.teams[ti];
+var name = t.teamName.length > 13 ? t.teamName.slice(0,13) + ‘.’ : t.teamName;
+labels.push(name);
+data.push(t.scores.composite);
+var s = t.scores.composite;
+if (s >= 75) colors.push(‘rgba(251,191,36,0.75)’);
+else if (s >= 60) colors.push(‘rgba(16,185,129,0.75)’);
+else if (s >= 45) colors.push(‘rgba(0,229,255,0.75)’);
+else if (s >= 30) colors.push(‘rgba(245,158,11,0.75)’);
+else colors.push(‘rgba(239,68,68,0.75)’);
+}
+oChart = new Chart(ctx, {
+type: ‘bar’,
+data: { labels: labels, datasets: [{ label: ‘Dynasty Score’, data: data, backgroundColor: colors, borderRadius: 5, borderSkipped: false }] },
+options: {
+responsive: true, maintainAspectRatio: true,
+plugins: { legend: { display: false } },
+scales: {
+x: { grid: { color: ‘rgba(255,255,255,0.03)’ }, ticks: { color: ‘#4a4a6a’, font: { family: ‘DM Mono’, size: 9 } } },
+y: { grid: { color: ‘rgba(255,255,255,0.03)’ }, ticks: { color: ‘#4a4a6a’, font: { family: ‘DM Mono’, size: 9 } }, min: 0, max: 100 }
+}
+}
+});
+
+var grid = document.getElementById(‘teams-grid’);
+grid.innerHTML = ‘’;
+for (var ci = 0; ci < S.teams.length; ci++) {
+var team = S.teams[ci];
+var tier = getTier(team.scores.composite);
+var sc = scoreColor(team.scores.composite);
+var card = document.createElement(‘div’);
+card.className = ‘team-card’;
+(function(rid) {
+card.onclick = function() { showTeamDetail(rid); };
+})(team.rosterId);
+var barsHtml = ‘’;
+var bars = [
+{ l:‘Starters’, v:team.scores.starters, c:’#00e5ff’ },
+{ l:‘Depth’,    v:team.scores.depth,    c:’#7c3aed’ },
+{ l:‘Youth’,    v:team.scores.youth,    c:’#10b981’ },
+{ l:‘Picks’,    v:team.scores.picks,    c:’#fbbf24’ }
+];
+for (var bi = 0; bi < bars.length; bi++) {
+barsHtml += ‘<div class="bar-row"><div class="bar-label">’ + bars[bi].l + ‘</div><div class="bar-track"><div class="bar-fill" style="width:' + bars[bi].v + '%;background:' + bars[bi].c + '"></div></div><div class="bar-val">’ + bars[bi].v + ‘</div></div>’;
+}
+card.innerHTML =
+‘<div class="team-card-top">’ +
+‘<div><div class="team-name">’ + esc(team.teamName) + ‘</div><div class="team-owner">’ + esc(team.ownerName) + ‘</div><span class="tier-badge ' + tier.cls + '">’ + tier.label + ‘</span></div>’ +
+‘<div style="text-align:right"><div class="team-score-num" style="color:' + sc + '">’ + team.scores.composite + ‘</div><div class="team-score-lbl">Dynasty Score</div><div class="team-rank-lbl">#’ + (ci+1) + ’ of ’ + S.teams.length + ‘</div></div>’ +
+‘</div>’ + barsHtml;
+grid.appendChild(card);
+}
+}
+
+// ── TEAM DETAIL ───────────────────────────────────────────────
+function showTeamDetail(rosterId) {
+var team = null;
+var rank = 0;
+for (var i = 0; i < S.teams.length; i++) {
+if (S.teams[i].rosterId === rosterId) { team = S.teams[i]; rank = i + 1; break; }
+}
+if (!team) return;
+showScreen(‘detail’);
+var tier = getTier(team.scores.composite);
+var sc = scoreColor(team.scores.composite);
+
+var byPos = { QB:[], RB:[], WR:[], TE:[], K:[], DEF:[] };
+for (var pi = 0; pi < team.players.length; pi++) {
+var pos = team.players[pi].pos;
+if (byPos[pos]) byPos[pos].push(team.players[pi]);
+else byPos.DEF.push(team.players[pi]);
+}
+
+var scoresHtml = ‘’;
+var scoreItems = [
+{ k:‘composite’, c:sc,        l:‘Dynasty’ },
+{ k:‘starters’,  c:’#00e5ff’, l:‘Starters’ },
+{ k:‘depth’,     c:’#7c3aed’, l:‘Depth’ },
+{ k:‘youth’,     c:’#10b981’, l:‘Youth’ },
+{ k:‘picks’,     c:’#fbbf24’, l:‘Picks’ }
+];
+for (var si = 0; si < scoreItems.length; si++) {
+scoresHtml += ‘<div><div class="dscore-val" style="color:' + scoreItems[si].c + '">’ + team.scores[scoreItems[si].k] + ‘</div><div class="dscore-lbl">’ + scoreItems[si].l + ‘</div></div>’;
+}
+
+var posOrder = [‘QB’,‘RB’,‘WR’,‘TE’,‘K’,‘DEF’];
+var posHtml = ‘’;
+for (var poi = 0; poi < posOrder.length; poi++) {
+var p = posOrder[poi];
+if (byPos[p] && byPos[p].length > 0) posHtml += renderPosSection(p, byPos[p]);
+}
+
+var picksHtml = ‘’;
+var sortedPicks = team.picks.slice().sort(function(a,b){ return a.year-b.year||a.round-b.round; });
+for (var pk = 0; pk < sortedPicks.length; pk++) {
+var pick = sortedPicks[pk];
+var val = Math.round(calcPickVal(pick));
+var rc = pick.round===1?‘r1’:pick.round===2?‘r2’:pick.round===3?‘r3’:’’;
+picksHtml += ‘<div class="pick-chip ' + rc + '"><div class="prnd">’ + pick.year + ’ R’ + pick.round + ’</div><div>Val: ’ + val + ‘</div>’ + (pick.traded ? ‘<div style="font-size:8px;opacity:.6">via trade</div>’ : ‘’) + ‘</div>’;
+}
+if (!picksHtml) picksHtml = ‘<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#4a4a6a">No picks on record</div>’;
+
+document.getElementById(‘detail-content’).innerHTML =
+‘<div class="detail-hero">’ +
+‘<div>’ +
+‘<div class="detail-rank" style="color:' + sc + '">#’ + rank + ‘</div>’ +
+‘<div class="detail-name">’ + esc(team.teamName) + ‘</div>’ +
+‘<div class="detail-owner-lbl">’ + esc(team.ownerName) + ’ - ’ + team.wins + ‘W-’ + team.losses + ‘L</div>’ +
+‘<span class="tier-badge ' + tier.cls + '">’ + tier.label + ‘</span>’ +
+‘<div class="detail-scores">’ + scoresHtml + ‘</div>’ +
+‘</div>’ +
+‘<div class="detail-chart-box"><canvas id="rchart" width="280" height="280"></canvas></div>’ +
+‘</div>’ +
+posHtml +
+‘<div class="position-section">’ +
+‘<div class="pos-header"><div class="pos-tag pos-K" style="background:rgba(251,191,36,0.12);color:#fbbf24">PICKS</div><div class="pos-count">’ + team.picks.length + ’ picks owned</div></div>’ +
+‘<div class="picks-grid">’ + picksHtml + ‘</div>’ +
+‘</div>’;
+
+setTimeout(function() {
+if (rChart) { rChart.destroy(); rChart = null; }
+var el = document.getElementById(‘rchart’);
+if (!el) return;
+rChart = new Chart(el, {
+type: ‘radar’,
+data: {
+labels: [‘Starters’,‘Depth’,‘Youth’,‘Picks’],
+datasets: [{
+data: [team.scores.starters, team.scores.depth, team.scores.youth, team.scores.picks],
+backgroundColor: ‘rgba(0,229,255,0.1)’,
+borderColor: ‘rgba(0,229,255,0.65)’,
+borderWidth: 2,
+pointBackgroundColor: ‘#00e5ff’,
+pointRadius: 4
+}]
+},
+options: {
+responsive: false,
+plugins: { legend: { display: false } },
+scales: { r: { min:0, max:100, grid:{ color:‘rgba(255,255,255,0.05)’ }, angleLines:{ color:‘rgba(255,255,255,0.05)’ }, ticks:{ display:false }, pointLabels:{ color:’#5a5a72’, font:{ family:‘DM Mono’, size:10 } } } }
+}
+});
+}, 50);
+}
+
+function renderPosSection(pos, players) {
+var rowsHtml = ‘’;
+for (var i = 0; i < players.length; i++) rowsHtml += renderPlayerRow(players[i]);
+return ‘<div class="position-section">’ +
+‘<div class="pos-header"><div class="pos-tag pos-' + pos + '">’ + pos + ‘</div><div class="pos-count">’ + players.length + ’ player’ + (players.length !== 1 ? ‘s’ : ‘’) + ‘</div></div>’ +
+‘<div class="ptable-hdr"><div>Player</div><div style="text-align:center">Age</div><div style="text-align:center">25 Rank</div><div style="text-align:center">24 Rank</div><div style="text-align:right">Score</div><div></div></div>’ +
+rowsHtml + ‘</div>’;
+}
+
+function renderPlayerRow(p) {
+var sc = scoreColor(p.score);
+var safeId = ‘pr_’ + p.pid.replace(/[^a-zA-Z0-9]/g, ‘_’);
+var c = AGE_CFG[p.pos] || AGE_CFG.WR;
+var age = p.age || 25;
+var ageScore;
+if (age <= c.peak) ageScore = Math.min(100, 85 + ((c.peak-age)/c.peak)*15);
+else if (age <= c.cliff) ageScore = Math.max(0, 85 - ((age-c.peak)/(c.cliff-c.peak))*70);
+else ageScore = Math.max(2, 15-(age-c.cliff)*10);
+ageScore = Math.round(Math.min(100, Math.max(0, ageScore)));
+function r2s(r) { return r ? Math.round(Math.max(0, 100 * Math.pow(1-(r-1)/50, 1.8))) : 0; }
+var rookieTag = p.isRookie ? ‘<span class="rookie-tag">ROOKIE</span>’ : ‘’;
+return ‘<div class="player-row" onclick="toggleBD(\'' + safeId + '\')">’ +
+‘<div class="player-name">’ + esc(p.name) + rookieTag + ‘</div>’ +
+‘<div class="pcell">’ + (p.age||’?’) + ‘</div>’ +
+‘<div class="pcell">’ + (p.r25 ? ‘#’+p.r25 : ‘-’) + ‘</div>’ +
+‘<div class="pcell">’ + (p.r24 ? ‘#’+p.r24 : ‘-’) + ‘</div>’ +
+‘<div class="pscore" style="color:' + sc + '">’ + p.score + ‘</div>’ +
+‘<button class="expand-btn" id="' + safeId + '-btn">v</button>’ +
+‘</div>’ +
+‘<div class="breakdown-row" id="' + safeId + '-bd">’ +
+‘<div><div class="bd-val" style="color:#10b981">’ + ageScore + ‘</div><div class="bd-lbl">Age Score</div></div>’ +
+‘<div><div class="bd-val" style="color:#00e5ff">’ + (p.r25 ? r2s(p.r25) : ‘-’) + ‘</div><div class="bd-lbl">2025 Rank</div></div>’ +
+‘<div><div class="bd-val" style="color:#7c3aed">’ + (p.r24 ? r2s(p.r24) : ‘-’) + ‘</div><div class="bd-lbl">2024 Rank</div></div>’ +
+‘<div><div class="bd-val" style="color:' + sc + '">’ + p.score + ‘</div><div class="bd-lbl">Dynasty Score</div></div>’ +
+‘</div>’;
+}
+
+function toggleBD(id) {
+var bd = document.getElementById(id + ‘-bd’);
+var btn = document.getElementById(id + ‘-btn’);
+if (!bd) return;
+if (bd.classList.contains(‘open’)) {
+bd.classList.remove(‘open’);
+if (btn) btn.textContent = ‘v’;
+} else {
+bd.classList.add(‘open’);
+if (btn) btn.textContent = ‘^’;
+}
+}
+
+// ── RANKINGS ──────────────────────────────────────────────────
+function renderRankings() {
+var rows = ‘’;
+for (var i = 0; i < S.teams.length; i++) {
+var t = S.teams[i];
+var tier = getTier(t.scores.composite);
+var sc = scoreColor(t.scores.composite);
+var rc = i===0?‘gold’:i===1?‘silver’:i===2?‘bronze’:’’;
+rows += ‘<tr onclick="showTeamDetail(' + t.rosterId + ');showScreen(\'detail\')">’ +
+‘<td><div class="rnum ' + rc + '">’ + (i+1) + ‘</div></td>’ +
+‘<td style="font-weight:600">’ + esc(t.teamName) + ‘</td>’ +
+‘<td style="color:#8888a8;font-size:12px">’ + esc(t.ownerName) + ‘</td>’ +
+‘<td style="text-align:right"><span style="font-family:\'Bebas Neue\',sans-serif;font-size:24px;color:' + sc + '">’ + t.scores.composite + ‘</span></td>’ +
+‘<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:11px;color:#00e5ff">’ + t.scores.starters + ‘</td>’ +
+‘<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:11px;color:#7c3aed">’ + t.scores.depth + ‘</td>’ +
+‘<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:11px;color:#10b981">’ + t.scores.youth + ‘</td>’ +
+‘<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:11px;color:#fbbf24">’ + t.scores.picks + ‘</td>’ +
+‘<td><span class="tier-badge ' + tier.cls + '">’ + tier.label + ‘</span></td>’ +
+‘<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:11px;color:#8888a8">’ + t.wins + ‘-’ + t.losses + ‘</td>’ +
+‘</tr>’;
+}
+document.getElementById(‘rankings-content’).innerHTML =
+‘<div class="rankings-wrap"><table class="rtable"><thead><tr>’ +
+‘<th style="width:48px">#</th><th>Team</th><th>Owner</th><th class="r">Dynasty</th><th class="r">Starters</th><th class="r">Depth</th><th class="r">Youth</th><th class="r">Picks</th><th>Tier</th><th class="r">Record</th>’ +
+‘</tr></thead><tbody>’ + rows + ‘</tbody></table></div>’;
+}
+
+// ── TRADE CALCULATOR ──────────────────────────────────────────
+function renderTrade() {
+S.tradeL = { roster: null, assets: [] };
+S.tradeR = { roster: null, assets: [] };
+document.getElementById(‘trade-content’).innerHTML =
+‘<div class="trade-layout">’ + tradeSideHTML(‘L’) + verdictHTML() + tradeSideHTML(‘R’) + ‘</div>’;
+updateVerdict();
+}
+
+function tradeSideHTML(side) {
+var opts = ‘<option value="">– Select Team –</option>’;
+for (var i = 0; i < S.teams.length; i++) {
+opts += ‘<option value="' + S.teams[i].rosterId + '">’ + esc(S.teams[i].teamName) + ’ (’ + esc(S.teams[i].ownerName) + ‘)</option>’;
+}
+return ‘<div class="trade-side" id="ts-' + side + '">’ +
+‘<div class="trade-side-title">’ + (side===‘L’?‘TEAM A GIVES’:‘TEAM B GIVES’) + ‘</div>’ +
+‘<select class="tsel" id="tsel-' + side + '" onchange="onTSel(\'' + side + '\')">’ + opts + ‘</select>’ +
+‘<div class="titems" id="ti-' + side + '"><div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#4a4a6a;padding:10px;text-align:center">No assets added</div></div>’ +
+‘<div class="total-row"><div class="total-lbl">Total Value</div><div class="total-val" id="tv-' + side + '">0</div></div>’ +
+‘<div class="add-section" id="ta-' + side + '" style="display:none">’ +
+‘<div class="add-lbl">Add Player</div>’ +
+‘<input class="asearch" id="as-' + side + '" placeholder="Search players" oninput="fDD(\'' + side + '\')" onfocus="fDD(\'' + side + '\')" />’ +
+‘<div class="asset-dd" id="add-' + side + '"></div>’ +
+‘<div class="add-lbl" style="margin-top:14px">Add Draft Pick</div>’ +
+‘<div class="pick-btns" id="pb-' + side + '"></div>’ +
+‘</div>’ +
+‘</div>’;
+}
+
+function verdictHTML() {
+return ‘<div class="verdict-box" id="vbox"><div class="v-lbl">Verdict</div><div class="v-icon">-</div><div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#4a4a6a">Select teams<br>to begin</div></div>’;
+}
+
+function onTSel(side) {
+var val = parseInt(document.getElementById(‘tsel-’ + side).value);
+var team = null;
+for (var i = 0; i < S.teams.length; i++) {
+if (S.teams[i].rosterId === val) { team = S.teams[i]; break; }
+}
+if (side === ‘L’) S.tradeL = { roster: team, assets: [] };
+else S.tradeR = { roster: team, assets: [] };
+document.getElementById(‘ta-’ + side).style.display = team ? ‘block’ : ‘none’;
+renderPickBtns(side, team);
+renderTItems(side);
+updateVerdict();
+}
+
+function renderPickBtns(side, team) {
+var c = document.getElementById(‘pb-’ + side);
+if (!c || !team) return;
+var html = ‘’;
+var picks = team.picks.slice().sort(function(a,b){return a.year-b.year||a.round-b.round;});
+for (var i = 0; i < picks.length; i++) {
+var val = Math.round(calcPickVal(picks[i]));
+var key = picks[i].year + ‘-’ + picks[i].round + ‘-’ + picks[i].origOwner;
+html += ‘<button class="pbtn" onclick="addPick(\'' + side + '\',\'' + key + '\',' + picks[i].year + ',' + picks[i].round + ',' + val + ')">’ + picks[i].year + ’ R’ + picks[i].round + ’ (’ + val + ‘)</button>’;
+}
+c.innerHTML = html;
+}
+
+function addPick(side, key, year, round, val) {
+var arr = side === ‘L’ ? S.tradeL.assets : S.tradeR.assets;
+for (var i = 0; i < arr.length; i++) { if (arr[i].key === key) return; }
+arr.push({ key:key, type:‘pick’, label: year + ’ Round ’ + round + ’ Pick’, value: val });
+renderTItems(side); updateVerdict();
+}
+
+function fDD(side) {
+var q = document.getElementById(‘as-’ + side).value.toLowerCase();
+var team = side === ‘L’ ? S.tradeL.roster : S.tradeR.roster;
+if (!team) return;
+var dd = document.getElementById(‘add-’ + side);
+var filtered = team.players.filter(function(p) { return p.name.toLowerCase().indexOf(q) !== -1; });
+var html = ‘’;
+var max = Math.min(15, filtered.length);
+for (var i = 0; i < max; i++) {
+var p = filtered[i];
+html += ‘<div class="aopt" onclick="addPl(\'' + side + '\',\'' + p.pid + '\')">’ +
+‘<span>’ + esc(p.name) + ’ <span style="font-size:10px;color:#4a4a6a">’ + p.pos + ‘</span></span>’ +
+‘<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:' + scoreColor(p.score) + '">’ + p.score + ‘</span>’ +
+‘</div>’;
+}
+dd.innerHTML = html;
+dd.classList.add(‘open’);
+}
+
+function addPl(side, pid) {
+var arr = side === ‘L’ ? S.tradeL.assets : S.tradeR.assets;
+for (var i = 0; i < arr.length; i++) { if (arr[i].key === pid) return; }
+var team = side === ‘L’ ? S.tradeL.roster : S.tradeR.roster;
+var p = null;
+if (team) { for (var j = 0; j < team.players.length; j++) { if (team.players[j].pid === pid) { p = team.players[j]; break; } } }
+if (!p) return;
+arr.push({ key:pid, type:‘player’, label: p.name + ’ (’ + p.pos + ‘)’, value: p.score });
+document.getElementById(‘add-’ + side).classList.remove(‘open’);
+document.getElementById(‘as-’ + side).value = ‘’;
+renderTItems(side); updateVerdict();
+}
+
+function rmAsset(side, key) {
+if (side === ‘L’) S.tradeL.assets = S.tradeL.assets.filter(function(a){return a.key!==key;});
+else S.tradeR.assets = S.tradeR.assets.filter(function(a){return a.key!==key;});
+renderTItems(side); updateVerdict();
+}
+
+function renderTItems(side) {
+var arr = side === ‘L’ ? S.tradeL.assets : S.tradeR.assets;
+var c = document.getElementById(‘ti-’ + side);
+var tv = document.getElementById(‘tv-’ + side);
+if (!c) return;
+if (!arr.length) {
+c.innerHTML = ‘<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#4a4a6a;padding:10px;text-align:center">No assets added</div>’;
+if (tv) tv.textContent = ‘0’;
+return;
+}
+var tot = 0;
+var html = ‘’;
+for (var i = 0; i < arr.length; i++) {
+tot += arr[i].value;
+html += ‘<div class="titem"><div style="font-size:13px;font-weight:500">’ + esc(arr[i].label) + ‘</div>’ +
+‘<div style="display:flex;align-items:center;gap:6px"><span class="titem-val">’ + arr[i].value + ‘</span>’ +
+‘<button class="rm-btn" onclick="rmAsset(\'' + side + '\',\'' + arr[i].key + '\')">x</button></div></div>’;
+}
+c.innerHTML = html;
+if (tv) tv.textContent = tot;
+}
+
+function updateVerdict() {
+var lv = 0, rv = 0;
+for (var i = 0; i < S.tradeL.assets.length; i++) lv += S.tradeL.assets[i].value;
+for (var j = 0; j < S.tradeR.assets.length; j++) rv += S.tradeR.assets[j].value;
+var vb = document.getElementById(‘vbox’);
+if (!vb) return;
+if (!S.tradeL.roster && !S.tradeR.roster) {
+vb.innerHTML = ‘<div class="v-lbl">Verdict</div><div class="v-icon">-</div><div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#4a4a6a">Select teams<br>to begin</div>’;
+return;
+}
+var tot = lv + rv;
+var diff = Math.abs(lv - rv);
+var pct = tot > 0 ? diff / tot : 0;
+var cls, txt, icon;
+if (pct <= 0.08)      { cls = ‘vfair’;     txt = ‘FAIR TRADE’; icon = ‘OK’; }
+else if (pct <= 0.20) { cls = ‘vslight’;   txt = ‘SLIGHT EDGE’; icon = ‘!’; }
+else                  { cls = ‘vlopsided’; txt = ‘LOPSIDED’;    icon = ‘!!’; }
+var winner = lv >= rv ? ‘TEAM A WINS’ : ‘TEAM B WINS’;
+var lp = tot > 0 ? (lv / tot) * 100 : 50;
+vb.innerHTML =
+‘<div class="v-lbl">Verdict</div>’ +
+‘<div class="v-icon" style="font-size:28px;font-family:\'Bebas Neue\',sans-serif;letter-spacing:2px">’ + icon + ‘</div>’ +
+‘<div class="v-txt ' + cls + '">’ + txt + ‘</div>’ +
+‘<div class="v-diff ' + cls + '">’ + diff + ‘</div>’ +
+‘<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#4a4a6a">’ + (tot > 0 ? winner : ‘’) + ‘</div>’ +
+‘<div class="v-bar"><div class="v-bar-fill" style="width:' + lp + '%;background:#00e5ff;opacity:.8"></div></div>’ +
+’<div class="v-ab"><span>A: ’ + lv + ’</span><span>B: ’ + rv + ‘</span></div>’;
+}
+
+document.addEventListener(‘click’, function(e) {
+var sides = [‘L’,‘R’];
+for (var i = 0; i < sides.length; i++) {
+var dd = document.getElementById(‘add-’ + sides[i]);
+var inp = document.getElementById(‘as-’ + sides[i]);
+if (dd && inp && !dd.contains(e.target) && e.target !== inp) {
+dd.classList.remove(‘open’);
+}
+}
+});
+
+document.getElementById(‘lid’).addEventListener(‘keydown’, function(e) {
+if (e.key === ‘Enter’) startLoad();
+});
+
 </script>
 </body>
 </html>
