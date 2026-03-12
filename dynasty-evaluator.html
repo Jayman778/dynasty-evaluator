@@ -453,24 +453,33 @@ fetch('https://api.sleeper.app/v1/league/' + S.leagueId + '/traded_picks')
 S.tradedPicks = data || [];
 row.className = 'log-row done';
 row.textContent = 'Traded picks loaded';
-processAndRender();
 })
 .catch(function(e) {
 S.tradedPicks = [];
 row.className = 'log-row done';
 row.textContent = 'Traded picks unavailable';
+})
+.finally(function() {
 processAndRender();
 });
 }
 
 function processAndRender() {
 var row = addLog('Calculating dynasty scores…', 'active');
+try {
 S.draftPicks = buildPickOwnership();
 buildTeams();
 row.className = 'log-row done';
-row.textContent = 'Done!';
+row.textContent = 'Done! Loading overview…';
 showScreen('overview');
 renderOverview();
+} catch(e) {
+row.className = 'log-row fail';
+row.textContent = 'Error: ' + e.message;
+document.getElementById('err-box').textContent = 'Processing error: ' + e.message;
+document.getElementById('err-box').style.display = 'block';
+showScreen('setup');
+}
 }
 
 // ── PICK OWNERSHIP ────────────────────────────────────────────
