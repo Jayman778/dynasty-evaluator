@@ -700,7 +700,7 @@ return { pid:pid, name:(p.full_name||pid), pos:pos, age:age, isRookie:isRookie, 
 }).filter(function(p) { return p !== null; });
 playerList.sort(function(a,b) { return b.score - a.score; });
 
-```
+
 var picks = S.draftPicks[roster.roster_id] || [];
 var pickTotal = 0;
 for (var pi = 0; pi < picks.length; pi++) pickTotal += calcPickScore(picks[pi]);
@@ -731,7 +731,7 @@ return {
   wins: (roster.settings && roster.settings.wins) ? roster.settings.wins : 0,
   losses: (roster.settings && roster.settings.losses) ? roster.settings.losses : 0
 };
-```
+
 
 });
 
@@ -968,6 +968,7 @@ document.getElementById('detail-content').innerHTML =
 '</div>' +
 '<div class="radar-box"><canvas id="rchart" width="270" height="270"></canvas></div>' +
 '</div>' +
+posHtml +
 posHtml +
 '<div class="pos-sec">' +
 '<div class="pos-hdr"><div class="pos-tag pos-K" style="background:rgba(251,191,36,0.1);color:#fbbf24">PICKS</div><div class="pos-cnt">' + team.picks.length + ' owned</div></div>' +
